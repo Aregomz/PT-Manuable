@@ -1,0 +1,44 @@
+.env
+.env.*
+!.env.example
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Local AI assistant files
+.codex/
+.codex-*/
+codex-*
+.chatgpt/
+.chatgpt-*/
+chatgpt-*
+.openai/
+.claude/
+CLAUDE.md
+.cursor/
+.continue/
+.aider*
+.agents/
+AGENTS.md
+copilot-instructions.md
+.github/copilot-instructions.md
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.venv/
+.mypy_cache/
+
+# Node
+node_modules/
+dist/
+coverage/
+.vite/
+.pnpm-store/
+*.log
+

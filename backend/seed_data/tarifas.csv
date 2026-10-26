@@ -1,0 +1,109 @@
+paqueteria,zona,peso_min,peso_max,unidad,precio,dias_entrega,vigencia_desde
+Estafeta  Mexicana,ZONA 3,20000,30000,g,1830.27,,
+FEDEX,zona3,5000,10000,g,"$1,137.24",3-5,
+ESTAFETA,Zona 3,10,20,kg,1267.11,,01/01/2026
+Red Pack,4,10,20,,"1391,04",,2026-01-01
+Estafeta,ZONA 3,3,5,kg,42237.00,5,2026-01-01
+REDPACK,zona2,3000,5000,g,"311,04",5 días,
+DHL ,zona3,20,30,,"2616,12",3,2026-01-01
+DHL Express,ZONA 2,10,20,kg,1514.24,2-4,
+REDPACK,zona2,3000,5000,g,"311,04",5 días,
+dhl,1,20,30,kg,"$1,677.00",,2026-01-01
+REDPACK,Z3,3000,5000,g,379.08,6,1-ene-2026
+Federal Express,4,5000,10000,g,1341.36 MXN,4,2026-01-01
+Federal Express,zona2,20,30,,2246.40,2,2026-01-01
+Redpack,4,3,5,kg,"447,12",,1-ene-2026
+Estafeta  Mexicana,zona3,5,10,,-703.95,,2026-01-01
+Estafeta Mexicana,zona4,1,3,KG,365.33,6,2026-01-01
+DHL Express,zona3,1,3,,,3,01/01/2026
+Fed Ex,Z4,3,5,kg,$869.40,4-6,
+FEDEX,Z1,1,3,KG,369.90,1-3,2026-01-01
+FEDEX,3,1,3,,577.04,,01/01/2026
+FedEx,Zona 7,0,1,kg,240.00,1,2026-01-01
+REDPACK,ZONA 4,20,30,KG,2020.32,7-9,2026-01-01
+Red Pack,Zona 2,5,10,,,5,2026-01-01
+dhl,2,5,10,KG,$881.92,2,
+estafeta ,ZONA 4,3,5,kg,498.18,6,
+DHL Express,ZONA 4,5,10,,"$1,267.76",,2026-01-01
+Estafeta  Mexicana,ZONA 1,1,3,kg,198.55,3,2026-01-01
+Fed Ex,3,20,30,kg,2737.80,3 días,01/01/2026
+FedEx,Zona 1,0,1,kg,267.30,,01/01/2026
+D.H.L.,Zona 4,1,3,KG,,4,
+FedEx,Zona 1,0,1,kg,267.30,,01/01/2026
+DHL ,ZONA 3,3,5,,689.52,,1-ene-2026
+ESTAFETA,zona3,0,1000,g,197.11,5 días,2026-01-01
+Estafeta,Z1,5,3,kg,260.00,3,2026-01-01
+Estafeta,zona2,3,5,kg,346.56,4,
+DHL,Z4,20,30,kg,3085.68,4 días,2026-01-01
+Estafeta,Zona 1,10,20,kg,812.25,3,2026-01-01
+ESTAFETA,Zona 3,10,20,kg,1267.11,,01/01/2026
+DHL,Zona 2,3,6,kg,470.00,2,2026-01-01
+FedEx,zona2,5,10,,933.12,2,01/01/2026
+estafeta ,Z2,5,10,KG,577.60,4,1-ene-2026
+REDPACK,Z1,0,1,kg,106.20 MXN,4,1-ene-2026
+Fed Ex,Z1,20000,30000,g,,1,2026-01-01
+dhl,Zona 1,5,10,kg,$689.00,1-3,2026-01-01
+FEDEX,Z3,0,1,KG,416.99,,1-ene-2026
+REDPACK,Z3,3000,5000,g,379.08,6,1-ene-2026
+Fedex,Z2,0,1,KG,"342,14",2 días,
+DHL,4,3,5,,$813.28,4,2026-01-01
+estafeta ,ZONA 3,1,3,,309.74,5-7,01/01/2026
+REDPACK,3,5,10,,645.84,6 días,2026-01-01
+Redpack,ZONA 4,0,1,kg,195.41,7,
+D.H.L.,Zona 4,10,20,KG,217672.00,4-6,01/01/2026
+Federal Express,ZONA 4,0,1,,"491,83",4-6,2026-01-01
+FEDEX,Zona 3,3,5,kg,,,01/01/2026
+DHL,ZONA 1,1,3,kg,34320.00,1,
+Fedex,Z2,1,3,kg,,2,01/01/2026
+Fed Ex,Z4,3,5,kg,$869.40,4-6,
+Redpack,zona4,1,3,KG,321.26,,2026-01-01
+Redpack,zona3,1,3,kg,272.38,6 días,01/01/2026
+Fedex,zona1,5,10,,729,1,2026-01-01
+Redpack,zona1,10,20,kg,"756,00",4-6,
+Estafeta  Mexicana,Zona 2,10000,20000,g,10.40,4,2026-01-01
+REDPACK,zona1,5,10,,414.00,,1-ene-2026
+Fedex,zona4,1,3,,$680.62,4 días,1-ene-2026
+REDPACK,3,5,10,,691.05,6 días,2026-03-01
+DHL,Zona 1,0,1,kg,244.40,1,
+DHL ,4,0,1,KG,449.70,4 días,01/01/2026
+REDPACK,2,0,1,kg,135.94,5,1-ene-2026
+Estafeta,ZONA 1,20,30,,117325.00,3,
+Red Pack,zona3,0,1,,165.67,,
+Redpack,zona1,3,5,,$243.00,,
+FedEx,zona4,20,30,,3229.20,4 días,1-ene-2026
+DHL Express,Zona 2,3,5,,$565.76,2-4,01/01/2026
+estafeta ,1,3,5,,270.75,3,01/01/2026
+Redpack,Z1,1,3,,174.60,,01/01/2026
+DHL,Z3,10,20,,"$1,845.48",3 días,1-ene-2026
+Estafeta,zona2,1,3,,254.14,4,2026-01-01
+Estafeta  Mexicana,4,0,1,kg,$232.48,6-8,01/01/2026
+D.H.L.,Zona 2,0,1,,"312,83",2-4,
+DHL ,Zona 1,3,5,,442,1 días,
+REDPACK,Z1,20,30,kg,"$1,098.00",4,2026-01-01
+REDPACK,zona2,10,20,,9.68,,
+REDPACK,Z4,5000,10000,g,$761.76,7,2026-01-01
+Redpack,4,3,5,kg,478.42,,2026-03-01
+DHL Express,2,20,30,kg,2146.56,2,2026-01-01
+FedEx,Z2,10,20,KG,,2-4,2026-01-01
+dhl,Z3,5,10,kg,1074.84,3,2026-01-01
+Estafeta  Mexicana,Z1,0,1,,$126.35,3,2026-01-01
+Paquetería Rayo,Zona 1,0,1,kg,99.00,2,2026-01-01
+FedEx,zona1,3,5,kg,472.50,1,2026-01-01
+DHL Express,Zona 2,1000,3000,,439.30,2-4,2026-01-01
+Estafeta Mexicana,Z4,5,10,kg,"830,30",6-8,2026-01-01
+Redpack,zona2,20,30,,1405.44,5 días,2026-01-01
+FedEx,zona3,10,20,kg,1937.52,3,
+Red Pack,zona3,0,1,,177.27,,2026-03-01
+Redpack,zona3,10000,20000,g,1179.36,6-8,01/01/2026
+D.H.L.,3,0,1000,g,381.26,,2026-01-01
+ESTAFETA,zona4,10,20,KG,,,2026-01-01
+Estafeta  Mexicana,zona2,0,1,,"161,73",4,2026-01-01
+Federal Express,4,5000,10000,g,1341.36 MXN,4,2026-01-01
+FEDEX,zona2,3,5,kg,604.80,2,1-ene-2026
+Estafeta,1,5000,10000,,$451.25,,01/01/2026
+Estafeta  Mexicana,4,20,30,kg,2158.78,6,2026-01-01
+Red Pack,Zona 3,20,30,kg,"1712,88",6,01/01/2026
+DHL Express,Z1,10,20,KG,1183.00,1 días,2026-01-01
+ESTAFETA,Z2,20,30,,1501.76,4 días,2026-01-01
+Fedex,ZONA 1,10000,20000,g,1242.00,,01/01/2026
+Red Pack,Z2,1,3,kg,223.49,5-7,
