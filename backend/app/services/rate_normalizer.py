@@ -22,6 +22,15 @@ EXPECTED_RATE_HEADERS = {
     "dias_entrega",
     "vigencia_desde",
 }
+EXPECTED_RATE_V2_HEADERS = {
+    "paqueteria",
+    "zona",
+    "peso_min_kg",
+    "peso_max_kg",
+    "precio_mxn",
+    "dias_entrega",
+    "vigencia_desde",
+}
 
 ALIASES = {
     "dhl": "dhl",
@@ -60,6 +69,39 @@ def read_csv(content: bytes, expected_headers: set[str], label: str) -> list[dic
                 details.append(f"sobran columnas: {', '.join(extra)}")
             raise CsvValidationError(f"Estructura inválida en {label}: {'; '.join(details)}.")
         return [{key: (value or "").strip() for key, value in row.items()} for row in reader]
+    except csv.Error as error:
+        raise CsvValidationError(f"No fue posible leer {label}: {error}.") from error
+
+
+def read_rate_csv(content: bytes, label: str) -> list[dict[str, str]]:
+    try:
+        text = content.decode("utf-8-sig")
+    except UnicodeDecodeError as error:
+        raise CsvValidationError(f"{label} debe estar codificado en UTF-8.") from error
+
+    try:
+        reader = csv.DictReader(io.StringIO(text))
+        headers = set(reader.fieldnames or [])
+        if headers == EXPECTED_RATE_HEADERS:
+            return [{key: (value or "").strip() for key, value in row.items()} for row in reader]
+        if headers == EXPECTED_RATE_V2_HEADERS:
+            return [
+                {
+                    "paqueteria": (row["paqueteria"] or "").strip(),
+                    "zona": (row["zona"] or "").strip(),
+                    "peso_min": (row["peso_min_kg"] or "").strip(),
+                    "peso_max": (row["peso_max_kg"] or "").strip(),
+                    "unidad": "kg",
+                    "precio": (row["precio_mxn"] or "").strip(),
+                    "dias_entrega": (row["dias_entrega"] or "").strip(),
+                    "vigencia_desde": (row["vigencia_desde"] or "").strip(),
+                }
+                for row in reader
+            ]
+        raise CsvValidationError(
+            f"Estructura inválida en {label}: los encabezados no corresponden "
+            "al formato de tarifas soportado."
+        )
     except csv.Error as error:
         raise CsvValidationError(f"No fue posible leer {label}: {error}.") from error
 

@@ -1,4 +1,4 @@
-export type ImportKind = 'carriers' | 'rates'
+export type ImportKind = 'carriers' | 'rates' | 'historical-quotes'
 export type ImportStatus = 'loaded' | 'corrected' | 'rejected' | 'duplicate'
 
 export interface ImportRow {
@@ -29,6 +29,8 @@ export interface Carrier {
   name: string
   service_type: string
   is_active: boolean
+  volumetric_divisor: string | null
+  volumetric_effective_from: string | null
   updated_at: string
 }
 
@@ -54,6 +56,8 @@ export interface CarrierUpdate {
   name: string
   service_type: string
   is_active: boolean
+  volumetric_divisor: string | null
+  volumetric_effective_from: string | null
 }
 
 export interface RateUpdate {
@@ -68,13 +72,23 @@ export interface RateUpdate {
 
 export interface LeadQuote {
   id: number
+  external_reference: string
+  source: 'public' | 'historical'
   origin_postal_code: string
   destination_postal_code: string
   weight_kg: string
-  distance_km: string
+  distance_km: string | null
   zone: number
   option_count: number
-  created_at: string
+  options: Array<{
+    carrier_name: string
+    price_mxn: string
+    min_delivery_days: number | null
+    max_delivery_days: number | null
+    billable_weight_kg: string
+  }>
+  quoted_at: string
+  valid_until: string
 }
 
 export interface CapturedLead {
@@ -86,11 +100,21 @@ export interface CapturedLead {
 
 export interface CapturedLeads {
   leads: CapturedLead[]
+  daily_metrics: Array<{
+    date: string
+    total_quotes: number
+    without_options: number
+  }>
 }
 
 export async function uploadDataFile(kind: ImportKind, file: File): Promise<ImportResult> {
   const formData = new FormData()
-  formData.append(kind === 'carriers' ? 'carriers_file' : 'rates_file', file)
+  const fieldNames: Record<ImportKind, string> = {
+    carriers: 'carriers_file',
+    rates: 'rates_file',
+    'historical-quotes': 'quotes_file',
+  }
+  formData.append(fieldNames[kind], file)
 
   return requestJson<ImportResult>(`/api/admin/imports/${kind}`, {
     method: 'POST',

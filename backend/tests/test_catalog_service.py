@@ -19,6 +19,8 @@ def test_updates_a_carrier_with_normalized_text() -> None:
         name="Estafeta",
         service_type="Terrestre",
         is_active=False,
+        volumetric_divisor=None,
+        volumetric_effective_from=None,
     )
 
 

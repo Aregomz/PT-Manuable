@@ -47,6 +47,8 @@ describe('App', () => {
                   name: 'Redpack',
                   service_type: 'Terrestre',
                   is_active: false,
+                  volumetric_divisor: null,
+                  volumetric_effective_from: null,
                   updated_at: '2026-10-26T10:00:00Z',
                 },
               ],
@@ -85,7 +87,7 @@ describe('App', () => {
           )
         }
         if (url.endsWith('/api/admin/leads')) {
-          return new Response(JSON.stringify({ leads: capturedLeads }), {
+          return new Response(JSON.stringify({ leads: capturedLeads, daily_metrics: [] }), {
             status: 200,
             headers: { 'Content-Type': 'application/json' },
           })
@@ -127,14 +129,21 @@ describe('App', () => {
           return new Response(
             JSON.stringify({
               id: 1,
+              external_reference: 'WEB-TEST00000001',
               email: 'cliente@example.com',
               origin_postal_code: '06600',
               origin_place_name: 'Juarez',
               destination_postal_code: '64000',
               destination_place_name: 'Monterrey Centro',
               weight_kg: '2.5',
+              length_cm: '20',
+              width_cm: '15',
+              height_cm: '10',
+              volumetric_weight_kg: '0.6',
               distance_km: '728.20',
               zone: 3,
+              quoted_at: '2026-10-26T10:00:00Z',
+              valid_until: '2026-11-25T10:00:00Z',
               options: [
                 {
                   rate_id: 1,
@@ -143,6 +152,9 @@ describe('App', () => {
                   price_mxn: '309.74',
                   min_delivery_days: 5,
                   max_delivery_days: 7,
+                  actual_weight_kg: '2.5',
+                  volumetric_weight_kg: '0.6',
+                  billable_weight_kg: '2.5',
                 },
                 {
                   rate_id: 2,
@@ -151,6 +163,9 @@ describe('App', () => {
                   price_mxn: '577.04',
                   min_delivery_days: null,
                   max_delivery_days: null,
+                  actual_weight_kg: '2.5',
+                  volumetric_weight_kg: '0.6',
+                  billable_weight_kg: '2.5',
                 },
               ],
             }),
@@ -190,15 +205,18 @@ describe('App', () => {
     })
     fireEvent.click(screen.getByRole('button', { name: 'Continuar' }))
 
-    fireEvent.change(screen.getByLabelText('Código postal de origen'), {
+    fireEvent.change(screen.getByLabelText(/^Código postal de origen/), {
       target: { value: '06600' },
     })
-    fireEvent.change(screen.getByLabelText('Código postal de destino'), {
+    fireEvent.change(screen.getByLabelText(/^Código postal de destino/), {
       target: { value: '64000' },
     })
     fireEvent.click(screen.getByRole('button', { name: 'Continuar' }))
 
     fireEvent.change(screen.getByLabelText(/Peso del paquete/), { target: { value: '2.5' } })
+    fireEvent.change(screen.getByLabelText(/^Largo/), { target: { value: '20' } })
+    fireEvent.change(screen.getByLabelText(/^Ancho/), { target: { value: '15' } })
+    fireEvent.change(screen.getByLabelText(/^Alto/), { target: { value: '10' } })
     fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Cotizar ahora' }))
 
     expect(
@@ -303,6 +321,11 @@ describe('App', () => {
     render(<App />)
 
     fireEvent.click(await screen.findByRole('button', { name: 'Leads capturados' }))
+    expect(await screen.findByText('Cargadas manualmente')).toBeInTheDocument()
+    expect(
+      screen.getByText('cotizaciones manuales con su precio original respetado'),
+    ).toBeInTheDocument()
+    fireEvent.click(await screen.findByRole('button', { name: 'Directorio de leads' }))
 
     expect(await screen.findByText('Aún no hay leads capturados.')).toBeInTheDocument()
     expect(
@@ -319,13 +342,25 @@ describe('App', () => {
         quotes: [
           {
             id: 12,
+            external_reference: 'COT-0012',
+            source: 'historical',
             origin_postal_code: '06600',
             destination_postal_code: '64000',
             weight_kg: '1.84',
             distance_km: '725.93',
             zone: 3,
             option_count: 2,
-            created_at: '2026-10-26T07:13:00Z',
+            options: [
+              {
+                carrier_name: 'DHL',
+                price_mxn: '350.00',
+                min_delivery_days: null,
+                max_delivery_days: null,
+                billable_weight_kg: '1.84',
+              },
+            ],
+            quoted_at: '2026-10-26T07:13:00Z',
+            valid_until: '2026-11-25T07:13:00Z',
           },
         ],
       },
@@ -335,6 +370,7 @@ describe('App', () => {
     render(<App />)
 
     fireEvent.click(await screen.findByRole('button', { name: 'Leads capturados' }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Directorio de leads' }))
     fireEvent.click(await screen.findByRole('button', { name: 'Ver cotizaciones' }))
 
     expect(screen.getByRole('dialog')).toHaveTextContent('Cotizaciones del lead')
@@ -343,6 +379,48 @@ describe('App', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Cerrar historial de cotizaciones' }))
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  })
+
+  it('filters leads that require follow-up from the dashboard', async () => {
+    capturedLeads = [
+      {
+        id: 15,
+        email: 'seguimiento@example.com',
+        created_at: '2026-10-26T07:00:00Z',
+        quotes: [
+          {
+            id: 20,
+            external_reference: 'WEB-SINOPCIONES',
+            source: 'public',
+            origin_postal_code: '06600',
+            destination_postal_code: '00000',
+            weight_kg: '2.00',
+            distance_km: null,
+            zone: 4,
+            option_count: 0,
+            options: [],
+            quoted_at: '2026-10-26T07:13:00Z',
+            valid_until: '2026-11-25T07:13:00Z',
+          },
+        ],
+      },
+    ]
+    authenticated = true
+    window.history.pushState({}, '', '/admin')
+    render(<App />)
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Leads capturados' }))
+    fireEvent.click(await screen.findByRole('button', { name: /Ver casos/ }))
+
+    expect(screen.getByRole('status')).toHaveTextContent(
+      'Mostrando 1 lead con cotizaciones sin opciones.',
+    )
+    expect(screen.getByText('seguimiento@example.com')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Ver cotizaciones' }))
+    expect(screen.getByRole('dialog')).toHaveTextContent(
+      'Sin opciones disponibles · requiere seguimiento',
+    )
   })
 })
 

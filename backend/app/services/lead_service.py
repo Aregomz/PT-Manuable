@@ -24,14 +24,21 @@ class LeadService:
                 lead["quotes"].append(
                     {
                         "id": row["quote_id"],
+                        "external_reference": row["external_reference"],
+                        "source": row["source"],
                         "origin_postal_code": row["origin_postal_code"],
                         "destination_postal_code": row["destination_postal_code"],
                         "weight_kg": row["weight_kg"],
                         "distance_km": row["distance_km"],
                         "zone": row["zone"],
                         "option_count": row["option_count"],
-                        "created_at": row["quote_created_at"],
+                        "options": row["options"],
+                        "quoted_at": row["quoted_at"],
+                        "valid_until": row["valid_until"],
                     }
                 )
-        return {"leads": list(leads.values())}
+        return {
+            "leads": list(leads.values()),
+            "daily_metrics": self.repository.list_daily_metrics(),
+        }
 

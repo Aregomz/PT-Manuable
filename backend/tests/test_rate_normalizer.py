@@ -1,6 +1,6 @@
 from decimal import Decimal
 
-from app.services.rate_normalizer import normalize_carrier, normalize_rate
+from app.services.rate_normalizer import normalize_carrier, normalize_rate, read_rate_csv
 
 CARRIERS = {"dhl": 1, "fedex": 2, "estafeta": 3, "redpack": 4}
 
@@ -86,3 +86,26 @@ def test_normalizes_a_carrier_and_preserves_its_inactive_state() -> None:
     assert result["carrier"]["name"] == "Redpack"
     assert result["carrier"]["service_type"] == "Terrestre"
     assert result["carrier"]["is_active"] is False
+
+
+def test_reads_the_phase_two_rate_format() -> None:
+    rows = read_rate_csv(
+        (
+            b"paqueteria,zona,peso_min_kg,peso_max_kg,precio_mxn,dias_entrega,"
+            b"vigencia_desde\nDHL,1,0,1,170.00,1-2,2026-12-01\n"
+        ),
+        "tarifas_dhl_v2.csv",
+    )
+
+    assert rows == [
+        {
+            "paqueteria": "DHL",
+            "zona": "1",
+            "peso_min": "0",
+            "peso_max": "1",
+            "unidad": "kg",
+            "precio": "170.00",
+            "dias_entrega": "1-2",
+            "vigencia_desde": "2026-12-01",
+        }
+    ]

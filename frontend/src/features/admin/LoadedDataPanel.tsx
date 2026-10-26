@@ -121,6 +121,7 @@ export function LoadedDataPanel({ version }: LoadedDataPanelProps) {
                 <th>Código</th>
                 <th>Paquetería</th>
                 <th>Servicio</th>
+                <th>Peso cobrable</th>
                 <th>Estado</th>
                 <th></th>
               </tr>
@@ -131,6 +132,11 @@ export function LoadedDataPanel({ version }: LoadedDataPanelProps) {
                   <td>{carrier.code}</td>
                   <td>{carrier.name}</td>
                   <td>{carrier.service_type}</td>
+                  <td>
+                    {carrier.volumetric_divisor && carrier.volumetric_effective_from
+                      ? `Volumétrico / ${formatNumber(carrier.volumetric_divisor)} desde ${carrier.volumetric_effective_from}`
+                      : 'Peso real'}
+                  </td>
                   <td>
                     <span
                       className={`availability ${carrier.is_active ? 'is-active' : 'is-inactive'}`}
@@ -224,6 +230,8 @@ function CatalogEditModal({
           name: target.value.name,
           service_type: target.value.service_type,
           is_active: target.value.is_active,
+          volumetric_divisor: target.value.volumetric_divisor ?? '',
+          volumetric_effective_from: target.value.volumetric_effective_from ?? '',
         }
       : null,
   )
@@ -255,7 +263,14 @@ function CatalogEditModal({
     setSaveError('')
     try {
       if (target.kind === 'carrier' && carrierForm) {
-        onSaved(await updateCarrier(target.value.id, carrierForm), 'carrier')
+        onSaved(
+          await updateCarrier(target.value.id, {
+            ...carrierForm,
+            volumetric_divisor: carrierForm.volumetric_divisor || null,
+            volumetric_effective_from: carrierForm.volumetric_effective_from || null,
+          }),
+          'carrier',
+        )
       } else if (target.kind === 'rate' && rateForm) {
         onSaved(
           await updateRate(target.value.id, {
@@ -335,6 +350,34 @@ function CatalogEditModal({
                 />
                 <span>Paquetería activa y disponible para cotizar</span>
               </label>
+              <div className="catalog-edit-form__grid">
+                <label>
+                  <span>Divisor volumétrico</span>
+                  <input
+                    min="0.01"
+                    placeholder="Sin cálculo volumétrico"
+                    step="0.01"
+                    type="number"
+                    value={carrierForm.volumetric_divisor}
+                    onChange={(event) =>
+                      setCarrierForm({ ...carrierForm, volumetric_divisor: event.target.value })
+                    }
+                  />
+                </label>
+                <label>
+                  <span>Aplicar desde</span>
+                  <input
+                    type="date"
+                    value={carrierForm.volumetric_effective_from}
+                    onChange={(event) =>
+                      setCarrierForm({
+                        ...carrierForm,
+                        volumetric_effective_from: event.target.value,
+                      })
+                    }
+                  />
+                </label>
+              </div>
             </>
           ) : rateForm ? (
             <div className="catalog-edit-form__grid">

@@ -8,19 +8,24 @@ from app.services.lead_service import LeadService
 def test_groups_multiple_quotes_under_the_same_lead() -> None:
     created_at = datetime(2026, 10, 26, 12, 0, tzinfo=UTC)
     repository = Mock()
+    repository.list_daily_metrics.return_value = []
     repository.list_leads_with_quotes.return_value = [
         {
             "lead_id": 1,
             "email": "cliente@example.com",
             "lead_created_at": created_at,
             "quote_id": quote_id,
+            "external_reference": f"WEB-{quote_id}",
+            "source": "public",
             "origin_postal_code": "06600",
             "destination_postal_code": "64000",
             "weight_kg": Decimal("2.000"),
             "distance_km": Decimal("900.00"),
             "zone": 3,
-            "quote_created_at": created_at,
             "option_count": 2,
+            "options": [],
+            "quoted_at": created_at,
+            "valid_until": created_at,
         }
         for quote_id in (2, 1)
     ]
@@ -30,4 +35,5 @@ def test_groups_multiple_quotes_under_the_same_lead() -> None:
     assert len(result["leads"]) == 1
     assert result["leads"][0]["email"] == "cliente@example.com"
     assert [quote["id"] for quote in result["leads"][0]["quotes"]] == [2, 1]
+    assert result["daily_metrics"] == []
 

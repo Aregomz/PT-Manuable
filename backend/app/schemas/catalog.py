@@ -10,6 +10,8 @@ class CarrierResponse(BaseModel):
     name: str
     service_type: str
     is_active: bool
+    volumetric_divisor: Decimal | None
+    volumetric_effective_from: date | None
     updated_at: datetime
 
 
@@ -35,6 +37,16 @@ class CarrierUpdate(BaseModel):
     name: str = Field(min_length=1, max_length=100)
     service_type: str = Field(min_length=1, max_length=50)
     is_active: bool
+    volumetric_divisor: Decimal | None = Field(default=None, gt=0)
+    volumetric_effective_from: date | None = None
+
+    @model_validator(mode="after")
+    def validate_volumetric_configuration(self) -> "CarrierUpdate":
+        if (self.volumetric_divisor is None) != (self.volumetric_effective_from is None):
+            raise ValueError(
+                "El divisor volumétrico y su fecha de inicio deben indicarse juntos."
+            )
+        return self
 
 
 class RateUpdate(BaseModel):

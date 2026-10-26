@@ -38,30 +38,60 @@ class QuoteRepository:
                 ),
             )
 
-    def find_rates(self, zone: int, weight_kg: Decimal) -> list[dict[str, Any]]:
+    def find_rates(
+        self,
+        zone: int,
+        weight_kg: Decimal,
+        volumetric_weight_kg: Decimal | None,
+        quote_date: date,
+    ) -> list[dict[str, Any]]:
         with self.connection.cursor(row_factory=dict_row) as cursor:
             cursor.execute(
                 """
+                WITH carrier_weights AS (
+                    SELECT
+                        carriers.*,
+                        CASE
+                            WHEN carriers.volumetric_effective_from IS NOT NULL
+                                AND carriers.volumetric_effective_from <= %(quote_date)s
+                                AND %(volumetric_weight_kg)s IS NULL
+                            THEN NULL
+                            WHEN carriers.volumetric_effective_from IS NOT NULL
+                                AND carriers.volumetric_effective_from <= %(quote_date)s
+                            THEN GREATEST(%(weight_kg)s, %(volumetric_weight_kg)s)
+                            ELSE %(weight_kg)s
+                        END AS billable_weight_kg
+                    FROM carriers
+                    WHERE carriers.is_active = TRUE
+                )
                 SELECT DISTINCT ON (carriers.id)
                     rates.id AS rate_id,
                     carriers.id AS carrier_id,
                     carriers.name AS carrier_name,
                     rates.price_mxn,
                     rates.min_delivery_days,
-                    rates.max_delivery_days
+                    rates.max_delivery_days,
+                    %(weight_kg)s AS actual_weight_kg,
+                    %(volumetric_weight_kg)s AS volumetric_weight_kg,
+                    carriers.billable_weight_kg
                 FROM rates
-                JOIN carriers ON carriers.id = rates.carrier_id
-                WHERE carriers.is_active = TRUE
-                  AND rates.zone = %s
-                  AND rates.min_weight_kg <= %s
-                  AND rates.max_weight_kg >= %s
-                  AND (rates.effective_from IS NULL OR rates.effective_from <= %s)
+                JOIN carrier_weights AS carriers ON carriers.id = rates.carrier_id
+                WHERE carriers.billable_weight_kg IS NOT NULL
+                  AND rates.zone = %(zone)s
+                  AND rates.min_weight_kg <= carriers.billable_weight_kg
+                  AND rates.max_weight_kg >= carriers.billable_weight_kg
+                  AND (rates.effective_from IS NULL OR rates.effective_from <= %(quote_date)s)
                 ORDER BY
                     carriers.id,
                     rates.min_weight_kg ASC,
                     rates.effective_from DESC NULLS LAST
                 """,
-                (zone, weight_kg, weight_kg, date.today()),
+                {
+                    "zone": zone,
+                    "weight_kg": weight_kg,
+                    "volumetric_weight_kg": volumetric_weight_kg,
+                    "quote_date": quote_date,
+                },
             )
             rates = [dict(row) for row in cursor.fetchall()]
         return sorted(rates, key=lambda rate: rate["price_mxn"])
@@ -86,14 +116,18 @@ class QuoteRepository:
             cursor.execute(
                 """
                 INSERT INTO quotes (
-                    lead_id, origin_postal_code, destination_postal_code, weight_kg,
+                    lead_id, external_reference, source,
+                    origin_postal_code, destination_postal_code, weight_kg,
+                    length_cm, width_cm, height_cm, volumetric_weight_kg,
                     origin_latitude, origin_longitude, destination_latitude,
-                    destination_longitude, distance_km, zone
+                    destination_longitude, distance_km, zone, quoted_at, valid_until
                 ) VALUES (
-                    %(lead_id)s, %(origin_postal_code)s, %(destination_postal_code)s,
-                    %(weight_kg)s, %(origin_latitude)s, %(origin_longitude)s,
+                    %(lead_id)s, %(external_reference)s, 'public',
+                    %(origin_postal_code)s, %(destination_postal_code)s, %(weight_kg)s,
+                    %(length_cm)s, %(width_cm)s, %(height_cm)s, %(volumetric_weight_kg)s,
+                    %(origin_latitude)s, %(origin_longitude)s,
                     %(destination_latitude)s, %(destination_longitude)s,
-                    %(distance_km)s, %(zone)s
+                    %(distance_km)s, %(zone)s, %(quoted_at)s, %(valid_until)s
                 ) RETURNING id
                 """,
                 {"lead_id": lead_id, **quote},
@@ -110,8 +144,9 @@ class QuoteRepository:
                     """
                     INSERT INTO quote_options (
                         quote_id, carrier_id, rate_id, carrier_name, price_mxn,
-                        min_delivery_days, max_delivery_days
-                    ) VALUES (%s, %s, %s, %s, %s, %s, %s)
+                        min_delivery_days, max_delivery_days, actual_weight_kg,
+                        volumetric_weight_kg, billable_weight_kg
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                     """,
                     (
                         quote_id,
@@ -121,6 +156,9 @@ class QuoteRepository:
                         rate["price_mxn"],
                         rate["min_delivery_days"],
                         rate["max_delivery_days"],
+                        rate["actual_weight_kg"],
+                        rate["volumetric_weight_kg"],
+                        rate["billable_weight_kg"],
                     ),
                 )
 

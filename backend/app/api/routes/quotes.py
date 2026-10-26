@@ -25,6 +25,9 @@ def create_quote(request: QuoteRequest) -> QuoteResponse:
                 request.origin_postal_code,
                 request.destination_postal_code,
                 request.weight_kg,
+                request.length_cm,
+                request.width_cm,
+                request.height_cm,
             )
     except PostalCodeNotFoundError as error:
         raise HTTPException(
@@ -34,6 +37,11 @@ def create_quote(request: QuoteRequest) -> QuoteResponse:
     except PostalCodeServiceError as error:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=str(error),
+        ) from error
+    except ValueError as error:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail=str(error),
         ) from error
     return QuoteResponse.model_validate(result)

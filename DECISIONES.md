@@ -87,3 +87,71 @@ Después de cotizar, el usuario puede seleccionar una de las tarifas. Los botone
 la conexión con los procesos que Manuable ya utiliza para cobrar y entregar cotizaciones.
 Esas integraciones quedan fuera del alcance de la fase 1 y los botones no ejecutan
 operaciones externas en esta prueba.
+
+# Decisiones — Fase 2
+
+## Tarifas versionadas y vigencia
+
+Las nuevas tarifas de DHL se guardan como registros adicionales con vigencia desde el 1 de
+diciembre de 2026. No se sobrescriben las anteriores: al cotizar se elige la versión más
+reciente cuya fecha de inicio no sea posterior a la fecha de la cotización. El importador
+acepta el nuevo formato CSV para que futuros cambios de precios o fechas puedan cargarse
+sin modificar código.
+
+Cada cotización guarda una referencia externa, fecha de creación, vencimiento a 30 días y
+una copia de las opciones, precios, tiempos de entrega y peso facturable mostrados. Por eso
+un cambio en el catálogo nunca recalcula ni altera una cotización ya entregada.
+
+## Peso volumétrico
+
+La regla se configura por paquetería con divisor y fecha de inicio. DHL y FedEx usan divisor
+5000 desde el 1 de diciembre de 2026; Estafeta no tiene regla activa y continúa con peso
+real. El cotizador solicita largo, ancho y alto en centímetros y guarda tanto peso real como
+volumétrico. Para una paquetería con la regla activa se busca la tarifa usando el mayor de
+ambos. Si una llamada antigua a la API omite dimensiones, esa paquetería no se ofrece desde
+la fecha de activación, pero las paqueterías que cobran por peso real siguen disponibles.
+El resultado volumétrico se redondea hacia arriba a tres decimales para ajustarse a la
+precisión almacenada sin cobrar por debajo del valor calculado.
+
+La configuración aparece en **Datos cargados** y puede editarse junto con la paquetería. La
+semilla inicial solo establece la regla una vez; reiniciar el sistema no revierte ajustes
+posteriores de Comercial.
+
+## Cotizaciones históricas
+
+Las 40 cotizaciones telefónicas se importan con su identificador, correo, fecha, ruta,
+paquetería y precio como snapshots independientes del catálogo. Se mantienen incluso si el
+precio histórico no coincide con una tarifa maestra; intentar deducir o sustituir el precio
+rompería el compromiso de respetar lo ya ofrecido. Al 20 de noviembre de 2026, 26 siguen
+dentro de sus 30 días y 14 ya vencieron.
+
+La comparación encontró 36 precios coincidentes y cuatro cotizaciones con importes que no
+coinciden con el catálogo actual. Esos cuatro registros corresponden a tres valores que
+antes aparecieron como tarifas dudosas: Estafeta zona 3 de 3–5 kg por $422.37 (dos casos),
+Estafeta zona 3 de 5–10 kg por $703.95 y DHL zona 4 de 10–20 kg por $2,176.72. Se preservan
+como evidencia histórica, pero no se promueven automáticamente al catálogo de tarifas.
+
+## Reportes de Customer Care
+
+El espacio final en `06600 ` era un problema de normalización: ahora frontend y API eliminan
+espacios externos antes de validar. Escribir una ciudad no es un código postal válido; el
+formulario acepta únicamente cinco dígitos y lo explica junto al campo, evitando una falla
+silenciosa.
+
+Dos personas con el mismo CP pueden ver paqueterías distintas si cambian peso, dimensiones,
+destino, fecha de vigencia o estado de la paquetería. Con exactamente los mismos datos y el
+mismo catálogo, el resultado es determinista; el CP por sí solo no define la opción.
+
+## Métricas para Growth
+
+La vista **Leads capturados** se divide en **Resumen** y **Directorio de leads**. El resumen
+muestra las últimas 30 fechas con actividad, el total de cotizaciones de cada día, cuántas
+terminaron sin opciones y la proporción entre cotizaciones públicas e históricas. El
+directorio conserva una fila por correo y abre el historial detallado en un modal. Se
+cuentan ambos orígenes, y una cotización sin filas en su snapshot de opciones se considera
+sin resultado.
+
+La tarjeta **Sin opciones** funciona también como acceso de seguimiento. **Ver casos** abre
+el directorio filtrado a los leads que tienen al menos una cotización sin alternativas. El
+historial del lead marca la cotización específica que requiere atención y permite volver al
+directorio completo sin perder el contexto de la sección.

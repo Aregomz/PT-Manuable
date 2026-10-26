@@ -5,12 +5,12 @@ from app.repositories.import_repository import ImportRepository
 from app.services.rate_normalizer import (
     ALIASES,
     EXPECTED_CARRIER_HEADERS,
-    EXPECTED_RATE_HEADERS,
     CsvValidationError,
     normalize_carrier,
     normalize_key,
     normalize_rate,
     read_csv,
+    read_rate_csv,
 )
 
 
@@ -54,7 +54,7 @@ class RateImportService:
             result["already_imported"] = True
             return result
 
-        raw_rows = read_csv(content, EXPECTED_RATE_HEADERS, filename)
+        raw_rows = read_rate_csv(content, filename)
         if not raw_rows:
             raise CsvValidationError("El archivo de tarifas no contiene registros.")
         carrier_ids = {

@@ -12,7 +12,8 @@ class CatalogRepository:
         with self.connection.cursor(row_factory=dict_row) as cursor:
             cursor.execute(
                 """
-                SELECT id, code, name, service_type, is_active, updated_at
+                SELECT id, code, name, service_type, is_active,
+                       volumetric_divisor, volumetric_effective_from, updated_at
                 FROM carriers
                 ORDER BY name
                 """
@@ -48,6 +49,8 @@ class CatalogRepository:
         name: str,
         service_type: str,
         is_active: bool,
+        volumetric_divisor: Any,
+        volumetric_effective_from: Any,
     ) -> dict[str, Any] | None:
         with self.connection.cursor(row_factory=dict_row) as cursor:
             cursor.execute(
@@ -56,11 +59,21 @@ class CatalogRepository:
                 SET name = %s,
                     service_type = %s,
                     is_active = %s,
+                    volumetric_divisor = %s,
+                    volumetric_effective_from = %s,
                     updated_at = CURRENT_TIMESTAMP
                 WHERE id = %s
-                RETURNING id, code, name, service_type, is_active, updated_at
+                RETURNING id, code, name, service_type, is_active,
+                          volumetric_divisor, volumetric_effective_from, updated_at
                 """,
-                (name, service_type, is_active, carrier_id),
+                (
+                    name,
+                    service_type,
+                    is_active,
+                    volumetric_divisor,
+                    volumetric_effective_from,
+                    carrier_id,
+                ),
             )
             row = cursor.fetchone()
             return dict(row) if row else None

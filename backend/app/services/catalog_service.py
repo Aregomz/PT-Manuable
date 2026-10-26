@@ -20,6 +20,8 @@ class CatalogService:
             name=update.name.strip(),
             service_type=update.service_type.strip(),
             is_active=update.is_active,
+            volumetric_divisor=update.volumetric_divisor,
+            volumetric_effective_from=update.volumetric_effective_from,
         )
 
     def update_rate(self, rate_id: int, update: RateUpdate) -> dict[str, Any] | None:

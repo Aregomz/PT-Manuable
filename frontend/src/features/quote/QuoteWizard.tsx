@@ -11,6 +11,9 @@ export function QuoteWizard({ onClose }: { onClose: () => void }) {
   const [originPostalCode, setOriginPostalCode] = useState('')
   const [destinationPostalCode, setDestinationPostalCode] = useState('')
   const [weight, setWeight] = useState('')
+  const [length, setLength] = useState('')
+  const [width, setWidth] = useState('')
+  const [height, setHeight] = useState('')
   const [result, setResult] = useState<QuoteResult | null>(null)
   const [selectedRateId, setSelectedRateId] = useState<number | null>(null)
   const [actionNotice, setActionNotice] = useState('')
@@ -46,6 +49,9 @@ export function QuoteWizard({ onClose }: { onClose: () => void }) {
         origin_postal_code: originPostalCode,
         destination_postal_code: destinationPostalCode,
         weight_kg: weight,
+        length_cm: length,
+        width_cm: width,
+        height_cm: height,
       })
       setResult(quote)
       setSelectedRateId(quote.options[0]?.rate_id ?? null)
@@ -66,6 +72,9 @@ export function QuoteWizard({ onClose }: { onClose: () => void }) {
     setOriginPostalCode('')
     setDestinationPostalCode('')
     setWeight('')
+    setLength('')
+    setWidth('')
+    setHeight('')
     setResult(null)
     setSelectedRateId(null)
     setActionNotice('')
@@ -132,6 +141,10 @@ export function QuoteWizard({ onClose }: { onClose: () => void }) {
                 {result.origin_place_name ?? result.origin_postal_code} →{' '}
                 {result.destination_place_name ?? result.destination_postal_code} ·{' '}
                 {formatNumber(result.distance_km)} km · Zona {result.zone}
+              </p>
+              <p className="quote-validity">
+                Folio {result.external_reference} · Precio vigente hasta{' '}
+                {formatDate(result.valid_until)}
               </p>
               {result.options.length > 0 ? (
                 <div className="quote-options">
@@ -213,6 +226,7 @@ export function QuoteWizard({ onClose }: { onClose: () => void }) {
                         value={originPostalCode}
                         onChange={(event) => handlePostalCode(event.target.value, setOriginPostalCode)}
                       />
+                      <small>Solo aceptamos códigos postales de 5 dígitos, no nombres de ciudad.</small>
                     </label>
                     <label className="quote-field">
                       <span>Código postal de destino</span>
@@ -226,6 +240,7 @@ export function QuoteWizard({ onClose }: { onClose: () => void }) {
                           handlePostalCode(event.target.value, setDestinationPostalCode)
                         }
                       />
+                      <small>Solo aceptamos códigos postales de 5 dígitos, no nombres de ciudad.</small>
                     </label>
                   </div>
                 )}
@@ -248,6 +263,14 @@ export function QuoteWizard({ onClose }: { onClose: () => void }) {
                         <span>kg</span>
                       </div>
                     </label>
+                    <div className="quote-route-fields quote-dimension-fields">
+                      <DimensionField label="Largo" value={length} onChange={setLength} />
+                      <DimensionField label="Ancho" value={width} onChange={setWidth} />
+                      <DimensionField label="Alto" value={height} onChange={setHeight} />
+                    </div>
+                    <small className="quote-dimensions-help">
+                      Medidas en centímetros. Se usan para calcular el peso volumétrico.
+                    </small>
                     <div className="quote-summary">
                       <span>{originPostalCode} → {destinationPostalCode}</span>
                       <span>{email}</span>
@@ -305,11 +328,42 @@ function QuoteOptionCard({
       <div>
         <strong>{option.carrier_name}</strong>
         {delivery && <span>Entrega estimada: {delivery}</span>}
+        {Number(option.billable_weight_kg) > Number(option.actual_weight_kg) && (
+          <span>Peso facturable: {formatNumber(option.billable_weight_kg)} kg</span>
+        )}
       </div>
       <b>
         ${Number(option.price_mxn).toLocaleString('es-MX', { minimumFractionDigits: 2 })}
       </b>
     </button>
+  )
+}
+
+function DimensionField({
+  label,
+  value,
+  onChange,
+}: {
+  label: string
+  value: string
+  onChange: (value: string) => void
+}) {
+  return (
+    <label className="quote-field">
+      <span>{label}</span>
+      <div className="quote-weight-input">
+        <input
+          min="0.01"
+          placeholder="20"
+          required
+          step="0.01"
+          type="number"
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+        />
+        <span>cm</span>
+      </div>
+    </label>
   )
 }
 
@@ -321,4 +375,8 @@ function formatDelivery(minimum: number | null, maximum: number | null): string 
 
 function formatNumber(value: string): string {
   return Number(value).toLocaleString('es-MX', { maximumFractionDigits: 2 })
+}
+
+function formatDate(value: string): string {
+  return new Intl.DateTimeFormat('es-MX', { dateStyle: 'medium' }).format(new Date(value))
 }

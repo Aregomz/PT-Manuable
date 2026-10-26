@@ -29,6 +29,7 @@ function getFilterCount(result: ImportResult, filter: 'all' | ImportStatus): num
 export function ImportPanel({ onImported }: ImportPanelProps) {
   const [carriersFile, setCarriersFile] = useState<File | null>(null)
   const [ratesFile, setRatesFile] = useState<File | null>(null)
+  const [historicalQuotesFile, setHistoricalQuotesFile] = useState<File | null>(null)
   const [loadingKind, setLoadingKind] = useState<ImportKind | null>(null)
   const [result, setResult] = useState<ImportResult | null>(null)
   const [filter, setFilter] = useState<'all' | ImportStatus>('all')
@@ -87,6 +88,15 @@ export function ImportPanel({ onImported }: ImportPanelProps) {
             title="Tarifas por zona y peso"
             onFileChange={setRatesFile}
             onImport={() => handleImport('rates', ratesFile)}
+          />
+          <FileImportCard
+            description="Registra cotizaciones realizadas fuera del cotizador y conserva su precio."
+            file={historicalQuotesFile}
+            inputLabel="Archivo de cotizaciones históricas"
+            loading={loadingKind === 'historical-quotes'}
+            title="Cotizaciones históricas"
+            onFileChange={setHistoricalQuotesFile}
+            onImport={() => handleImport('historical-quotes', historicalQuotesFile)}
           />
         </div>
         {error && (

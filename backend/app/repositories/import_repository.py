@@ -56,6 +56,61 @@ class ImportRepository:
             rows = cursor.fetchall()
         return [dict(row) for row in rows]
 
+    def upsert_lead(self, email: str) -> int:
+        with self.connection.cursor() as cursor:
+            cursor.execute(
+                """
+                INSERT INTO leads (email) VALUES (%s)
+                ON CONFLICT (email) DO UPDATE SET updated_at = CURRENT_TIMESTAMP
+                RETURNING id
+                """,
+                (email,),
+            )
+            row = cursor.fetchone()
+        if row is None:
+            raise RuntimeError("No fue posible guardar el lead histórico.")
+        return int(row[0])
+
+    def add_historical_quote(self, import_row_id: int, quote: dict[str, Any]) -> bool:
+        with self.connection.cursor() as cursor:
+            cursor.execute(
+                """
+                INSERT INTO quotes (
+                    lead_id, external_reference, source, origin_postal_code,
+                    destination_postal_code, weight_kg, zone, quoted_at, valid_until,
+                    source_import_row_id
+                ) VALUES (
+                    %(lead_id)s, %(external_reference)s, 'historical', %(origin_postal_code)s,
+                    %(destination_postal_code)s, %(weight_kg)s, %(zone)s, %(quoted_at)s,
+                    %(valid_until)s, %(source_import_row_id)s
+                )
+                ON CONFLICT (external_reference) DO NOTHING
+                RETURNING id
+                """,
+                {**quote, "source_import_row_id": import_row_id},
+            )
+            row = cursor.fetchone()
+            if row is None:
+                return False
+            quote_id = int(row[0])
+            cursor.execute(
+                """
+                INSERT INTO quote_options (
+                    quote_id, carrier_id, carrier_name, price_mxn,
+                    actual_weight_kg, billable_weight_kg
+                ) VALUES (%s, %s, %s, %s, %s, %s)
+                """,
+                (
+                    quote_id,
+                    quote["carrier_id"],
+                    quote["carrier_name"],
+                    quote["price_mxn"],
+                    quote["weight_kg"],
+                    quote["weight_kg"],
+                ),
+            )
+            return True
+
     def add_import_row(self, import_id: int, row: dict[str, Any]) -> int:
         with self.connection.cursor() as cursor:
             cursor.execute(

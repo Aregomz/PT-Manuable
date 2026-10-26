@@ -6,6 +6,7 @@ from app.api.dependencies import CommercialUser
 from app.db import get_connection
 from app.repositories.import_repository import ImportRepository
 from app.schemas.imports import ImportSummaryResponse
+from app.services.historical_quote_import_service import HistoricalQuoteImportService
 from app.services.rate_import_service import RateImportService
 from app.services.rate_normalizer import CsvValidationError
 
@@ -56,6 +57,30 @@ async def import_rates(
             detail=str(error),
         ) from error
 
+    return ImportSummaryResponse.model_validate(result)
+
+
+@router.post(
+    "/historical-quotes",
+    response_model=ImportSummaryResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+async def import_historical_quotes(
+    _: CommercialUser,
+    quotes_file: Annotated[UploadFile, File()],
+) -> ImportSummaryResponse:
+    quotes_content = await read_csv_upload(quotes_file, "cotizaciones históricas")
+    try:
+        with get_connection() as connection, connection.transaction():
+            result = HistoricalQuoteImportService(ImportRepository(connection)).import_quotes(
+                quotes_file.filename or "cotizaciones_historicas.csv",
+                quotes_content,
+            )
+    except CsvValidationError as error:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=str(error),
+        ) from error
     return ImportSummaryResponse.model_validate(result)
 
 
